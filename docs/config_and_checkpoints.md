@@ -23,7 +23,7 @@ All experiment configurations use AdamW.
 | phase `source_*`, `checkpoint_reference`, model `architecture` | Descriptive fields; they do not override measured checkpoint metadata. Architecture must match ResNet101. |
 | top-level `training.min_epochs/max_epochs` | Top-level descriptive bounds; selected ordinary phases use `phase.epochs` and `early_stopping.start_epoch`. Stagewise phases use stage bounds. |
 
-Extra metadata remains in `config_used.yaml`. The validator checks supported execution settings; arbitrary extra metadata is not an additional executable option. Controller and focal-loss support are optional compatibility features outside the configured experiment routes.
+Extra metadata remains in `config_used.yaml`. The validator checks supported execution settings; arbitrary extra metadata is not an additional executable option. Controller and focal-loss support are optional features outside the configured experiment routes. [Training architecture](training_architecture.md) explains why the optional controller and stagewise rollback have different behavior and which routes the configurations use.
 
 ## Checkpoint metadata and selection
 

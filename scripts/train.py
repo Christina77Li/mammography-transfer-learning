@@ -38,7 +38,7 @@ def main():
             checkpoint = config.get("model", {}).get("init_checkpoint") or config.get("init_checkpoint")
             if checkpoint:
                 from src.models.resnet import get_model
-                from src.training.experiment_runner import load_initial_checkpoint
+                from src.training.checkpointing import load_initial_checkpoint
                 load_initial_checkpoint(get_model(imagenet_weights=False), checkpoint, "cpu")
             print("Preflight passed; no training or output files created.")
         else:

@@ -158,7 +158,7 @@ def build_dataloaders(config: dict, create_splits=True):
             split_path=small_split_path,
             pos_neg_ratio=ratio,
             seed=seed,
-        create_cache=create_splits,
+            create_cache=create_splits,
             pos_fraction=float(small_cfg.get("pos_fraction", 1.0)),
             max_pos_groups=small_cfg.get("max_pos_groups"),
         )

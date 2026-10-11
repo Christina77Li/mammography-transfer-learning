@@ -1,6 +1,6 @@
-experiment,result_type,epoch,epoch_scope,stage,roc_auc,pr_auc,val_loss
-Exp2a,best_auc,7,warmup_phase,all_blocks,0.6487,0.0385,0.3016
-Exp2a,selected_transition,4,warmup_phase,all_blocks,0.6436,0.0347,0.2644
-Exp2b,loss_controlled,3,transfer_phase,all_blocks,0.6487,0.0390,0.4207
-Exp4a,best_auc,20,global,head_only,0.6086,0.0322,0.3452
-Exp4a,selected_transition,17,global,head_only,0.6026,0.0320,0.3284
+experiment,result_type,epoch,epoch_scope,stage,roc_auc,pr_auc,val_loss,val_loss_criterion,val_pos_weight
+Exp2a,best_auc,7,warmup_phase,all_blocks,0.6487,0.0385,0.3016,bce,1.0
+Exp2a,selected_transition,4,warmup_phase,all_blocks,0.6436,0.0347,0.2644,bce,1.0
+Exp2b,loss_controlled,3,transfer_phase,all_blocks,0.6487,0.0390,0.4207,bce_pos,6.7615
+Exp4a,best_auc,20,global,head_only,0.6086,0.0322,0.3452,bce,1.0
+Exp4a,selected_transition,17,global,head_only,0.6026,0.0320,0.3284,bce,1.0

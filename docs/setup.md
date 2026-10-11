@@ -40,7 +40,7 @@ For a compatible NVIDIA GPU, install the CUDA 12.6 wheels:
 .\.venv\Scripts\python.exe -m pip install --upgrade --force-reinstall torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu126
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
-.\.venv\Scripts\python.exe scripts/train.py --config configs/exp3m_late_stage_auc_tolerance_rollback.yaml --check
+.\.venv\Scripts\python.exe scripts/train.py --config configs/exp3_gradual_unfreezing.yaml --check
 ```
 
 Confirm CUDA availability and run preflight against your data and cached splits. `imagenet_weights: true` downloads torchvision's ResNet101 V2 weights unless they are already cached; the smoke test sets this false. `model.init_checkpoint` transfers model weights with strict architecture checking and creates a new optimizer/scheduler; it does not resume the exact training process.
@@ -74,7 +74,7 @@ The CSV must contain `patient_id`, `image_id`, `laterality` (L/R) and `cancer` (
 For a first data check, use:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts/train.py --config configs/exp3m_late_stage_auc_tolerance_rollback.yaml --device cpu --check
+.\.venv\Scripts\python.exe scripts/train.py --config configs/exp3_gradual_unfreezing.yaml --device cpu --check
 ```
 
 Then use a new output directory for each execution. Exp2b needs the selected Exp2a checkpoint; adjust the initialization path in a configuration copy if Exp2a's output directory changes. Run outputs and weights are excluded from Git.

@@ -8,13 +8,13 @@ import pandas as pd
 
 
 NO_ANNOTATION_EXPERIMENTS = {
-    "exp2a_subset_warmup_1to3_auc_loss_guard",
-    "exp2b_from_exp2a_selected_epoch4",
+    "exp2a_balanced_warmup",
+    "exp2b_full_data_transfer",
 }
 
 UNFREEZE_STAGE_ONLY_EXPERIMENTS = {
-    "exp3m_late_stage_auc_tolerance_rollback",
-    "exp4_1to3_head_warmup_loss_guard_fixed_tolerance",
+    "exp3_gradual_unfreezing",
+    "exp4_combined_strategy",
 }
 
 UNFREEZE_STAGE_NAMES = {"layer4", "layer3", "layer2", "layer1", "conv1"}

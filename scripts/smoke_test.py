@@ -45,7 +45,7 @@ def run(work):
     subprocess.run(command,cwd=work,env=env,check=True)
     from src.data.dataset import build_dataloaders
     from src.models.resnet import get_model
-    from src.training.experiment_runner import load_initial_checkpoint
+    from src.training.checkpointing import load_initial_checkpoint
     from src.training.evaluate import evaluate
     from src.training.losses import build_criterion
     loaders = build_dataloaders(config)

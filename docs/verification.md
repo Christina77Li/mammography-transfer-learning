@@ -7,7 +7,7 @@ python -m pytest -q
 python scripts/smoke_test.py
 ```
 
-The 41 regression tests cover input identifiers and labels, PNG/CSV consistency, split and subset caches, DICOM polarity, configuration validation, checkpoint selection, stage rollback and final metric consistency.
+The 44 regression tests cover input identifiers and labels, PNG/CSV consistency, split and subset caches, DICOM polarity, configuration validation, checkpoint selection, stage rollback and final metric consistency. Selection tests check inclusive loss bounds, absolute caps and AUC tie-breaking. Closed-form zero-logit tests verify both ordinary and positive-weighted validation BCE against the phase's training criterion.
 
 The smoke test trains ResNet101 on synthetic images, checks that preflight creates no outputs, reloads the checkpoint and verifies that all reevaluated metrics match within `1e-6`. Synthetic test metrics are not research results. Temporary files are removed unless a new `--work-dir` is provided.
 

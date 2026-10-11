@@ -1,0 +1,241 @@
+experiment_name: exp4_combined_strategy
+output_dir: outputs/exp4_combined_strategy
+seed: 42
+deterministic: false
+device: cuda
+
+data:
+  image_dir: input/images_as_pngs_512/train_images_processed_512
+  label_csv_path: input/train.csv
+  split_path: input/rsna_split_seed42.json
+  val_pct: 0.2
+  image_size: 256
+  batch_size: 64
+  num_workers: 4
+  use_weighted_sampler: false
+  small_subset:
+    enabled: true
+    split_path: input/rsna_small_subset_exp4_seed42.json
+    pos_neg_ratio: 3.0
+    pos_fraction: 1.0
+
+model:
+  name: resnet101
+  architecture: resnet101
+  num_classes: 1
+  imagenet_weights: true
+  init_checkpoint: null
+
+training:
+  batch_size: 64
+  freeze_all_batchnorm: true
+
+batch_norm:
+  freeze_running_stats: true
+  keep_bn_eval_during_training: true
+  train_bn_affine: false
+
+optimizer:
+  type: adamw
+  weight_decay: 0.0001
+
+loss:
+  type: bce-pos
+  sqrt_pos_weight: true
+
+scheduler:
+  type: reduce_on_plateau
+  monitor: val_loss
+  mode: min
+  factor: 0.5
+  patience: 2
+  threshold: 0.001
+  cooldown: 1
+  min_lr: 0.0000001
+
+early_stopping:
+  monitor: val_auc
+  mode: max
+  patience: 999
+  min_delta: 0.002
+  start_epoch: 999
+
+save_best:
+  monitor: val_auc
+  mode: max
+
+phases:
+  - name: phase1_subset_head_warmup
+    loader: small
+    train_data_type: subset_1to3
+    stagewise_rollback: true
+    loss:
+      type: bce
+    optimizer:
+      type: adamw
+      weight_decay: 0.0001
+    scheduler:
+      type: reduce_on_plateau
+      monitor: val_auc
+      mode: max
+      factor: 0.5
+      patience: 3
+      threshold: 0.002
+      cooldown: 1
+      min_lr: 0.000001
+    stage_transition:
+      selection: best_auc_with_loss_tolerance
+      rollback_to: best_auc_with_loss_tolerance
+      monitor: val_auc
+      mode: max
+      patience: 5
+      min_delta: 0.001
+      loss_tolerance_from_best_loss: 0.05
+      max_allowed_val_loss: 0.35
+      reset_optimizer_on_new_stage: true
+      reset_scheduler_on_new_stage: true
+    stagewise_stages:
+      - name: phase1_head_only
+        min_epochs: 6
+        max_epochs: 20
+        trainable_blocks: []
+        head_lr: 0.0003
+
+  - name: phase2_full_head_recalibration
+    loader: train
+    train_data_type: full_rsna
+    stagewise_rollback: true
+    loss:
+      type: bce-pos
+      sqrt_pos_weight: true
+    optimizer:
+      type: adamw
+      weight_decay: 0.0001
+    scheduler:
+      type: reduce_on_plateau
+      monitor: val_loss
+      mode: min
+      factor: 0.5
+      patience: 2
+      threshold: 0.001
+      cooldown: 1
+      min_lr: 0.0000005
+    stage_transition:
+      selection: best_auc_with_loss_tolerance
+      rollback_to: best_auc_with_loss_tolerance
+      monitor: val_loss
+      mode: min
+      patience: 3
+      min_delta: 0.001
+      loss_tolerance_from_best_loss: 0.002
+      reset_optimizer_on_new_stage: true
+      reset_scheduler_on_new_stage: true
+    stagewise_stages:
+      - name: phase2_head_recalibration
+        min_epochs: 3
+        max_epochs: 8
+        trainable_blocks: []
+        head_lr: 0.0001
+
+  - name: phase3_full_gradual_unfreeze
+    loader: train
+    train_data_type: full_rsna
+    stagewise_rollback: true
+    loss:
+      type: bce-pos
+      sqrt_pos_weight: true
+    optimizer:
+      type: adamw
+      weight_decay: 0.0001
+    scheduler:
+      type: reduce_on_plateau
+      monitor: val_loss
+      mode: min
+      factor: 0.5
+      patience: 2
+      threshold: 0.001
+      cooldown: 1
+      min_lr: 0.0000001
+    stage_transition:
+      reset_optimizer_on_new_stage: true
+      reset_scheduler_on_new_stage: true
+      default_selection: best_val_loss
+      monitor: val_loss
+      mode: min
+      patience: 3
+      min_delta: 0.001
+      stage_specific:
+        layer4:
+          selection: best_val_loss
+        layer3:
+          selection: best_auc_with_loss_tolerance
+          loss_tolerance_from_best_loss: 0.005
+        layer2:
+          selection: best_auc_with_loss_tolerance
+          loss_tolerance_from_best_loss: 0.002
+        layer1:
+          selection: best_auc_with_loss_tolerance
+          loss_tolerance_from_best_loss: 0.002
+        conv1:
+          selection: best_auc_with_loss_tolerance
+          loss_tolerance_from_best_loss: 0.002
+    stagewise_stages:
+      - name: layer4
+        min_epochs: 4
+        max_epochs: 14
+        trainable_blocks:
+          - layer4
+        layer4_lr: 0.000015
+        head_lr: 0.00004
+      - name: layer3
+        min_epochs: 4
+        max_epochs: 10
+        trainable_blocks:
+          - layer3
+          - layer4
+        layer3_lr: 0.0000008
+        layer4_lr: 0.000002
+        head_lr: 0.000004
+      - name: layer2
+        min_epochs: 3
+        max_epochs: 8
+        trainable_blocks:
+          - layer2
+          - layer3
+          - layer4
+        layer2_lr: 0.0000003
+        layer3_lr: 0.0000008
+        layer4_lr: 0.0000015
+        head_lr: 0.000003
+      - name: layer1
+        min_epochs: 3
+        max_epochs: 8
+        trainable_blocks:
+          - layer1
+          - layer2
+          - layer3
+          - layer4
+        layer1_lr: 0.0000001
+        layer2_lr: 0.0000003
+        layer3_lr: 0.0000006
+        layer4_lr: 0.000001
+        head_lr: 0.000002
+      - name: conv1
+        min_epochs: 3
+        max_epochs: 8
+        trainable_blocks:
+          - conv1
+          - layer1
+          - layer2
+          - layer3
+          - layer4
+        conv1_lr: 0.00000005
+        layer1_lr: 0.0000001
+        layer2_lr: 0.0000002
+        layer3_lr: 0.0000005
+        layer4_lr: 0.000001
+        head_lr: 0.000002
+
+logging:
+  use_wandb: false
+  project: breast-cancer-detection

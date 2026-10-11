@@ -37,6 +37,8 @@ def save(fig, directory, stem):
 
 def comparison(results, directory):
     rows = read_rows(results/'reported_metrics.csv')
+    validation = next(row for row in read_rows(results/'dataset_summary.csv') if row['partition'] == 'validation')
+    chance_ap = int(validation['positive_images']) / int(validation['total_images'])
     labels = [row['experiment'] for row in rows]
     fig, axes = plt.subplots(1, 3, figsize=(12, 4.5))
     for ax, key, title, ylabel in zip(axes, ['roc_auc', 'pr_auc', 'val_loss'], ['ROC-AUC  ·  higher is better', 'PR-AUC (AP)  ·  higher is better', 'Validation loss  ·  lower is better'], ['ROC-AUC', 'Average precision', 'Validation loss']):
@@ -47,6 +49,12 @@ def comparison(results, directory):
         ax.set_title(title, fontsize=11, loc='left', pad=13)
         for i, value in enumerate(values):
             ax.text(i, value+max(values)*.025, f'{value:.4f}', ha='center', fontsize=10)
+        if key == 'pr_auc':
+            ax.axhline(chance_ap, color='#425166', linestyle='--', linewidth=1,
+                       label=f'No-skill AP ≈ {chance_ap:.4f}')
+            ax.legend(frameon=False, fontsize=8, loc='upper left')
+        if key == 'val_loss':
+            ax.set_ylabel('Weighted BCE (positive weight ≈ 6.76)')
     fig.suptitle('Reported validation results by training strategy', x=.07, ha='left', fontsize=16, fontweight='bold')
     fig.text(.07,.085,'Exp1: direct fine-tuning   |   Exp2b: warm-up → full data   |   Exp3: gradual unfreezing   |   Exp4: combined', fontsize=9, color='#425166')
     fig.text(.07,.035,'One checkpoint per experiment · Single-run validation results', fontsize=9, color='#5b6878')
