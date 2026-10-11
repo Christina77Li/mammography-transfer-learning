@@ -1,5 +1,7 @@
 # Experiments
 
+Configuration filenames and run identifiers were standardized for readability; the experiment hyperparameters are unchanged by this naming cleanup, and Exp1–Exp4 still identify the experiments reported here. Output/cache paths and the Exp2a → Exp2b initialization path were updated to match the new names.
+
 ## Training strategies
 
 | Experiment | Configuration | Strategy |
@@ -41,6 +43,8 @@ The validation positive fraction is `222 / 10,978 ≈ 0.02022`, giving a no-skil
 Validation uses the training criterion for that phase. Ordinary BCE warm-up losses are not directly comparable with weighted full-data losses. The four main checkpoints and the full-data stage checkpoints use approximately the same positive weight (`sqrt(42,792 / 936) ≈ 6.7615`); Exp3 specifies that weight explicitly. CSVs include `val_loss_criterion` and `val_pos_weight`, with effective weight 1 for ordinary BCE.
 
 Exp2b starts from the selected Exp2a transition checkpoint and uses positive-weighted BCE on full data. Exp4 performs head recalibration before gradually unfreezing the backbone. The main results are in `results/reported_metrics.csv`; additional checkpoints are in `results/additional_checkpoints.csv`.
+
+With the default output directory, a successful Exp2a run writes `outputs/exp2a_balanced_warmup/checkpoints/selected_transition_checkpoint.pth` and its `.metrics.json` sidecar. Exp2b's `model.init_checkpoint` points to that file. If no epoch meets Exp2a's loss guard, the run fails without creating an ineligible transition checkpoint. If Exp2a uses a custom `--output-dir`, update Exp2b's initialization path accordingly.
 
 ## Gradual unfreezing
 

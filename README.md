@@ -1,5 +1,7 @@
 # Mammography Classification with Transfer Learning
 
+English | [日本語](README.ja.md)
+
 [![CPU validation](https://github.com/Christina77Li/mammography-transfer-learning/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/Christina77Li/mammography-transfer-learning/actions/workflows/tests.yml)
 
 A comparison of four fine-tuning strategies for ImageNet-pretrained **ResNet101** on the highly imbalanced RSNA screening mammography dataset. This project explores how early class distribution and progressive backbone adaptation affect image-level cancer classification.

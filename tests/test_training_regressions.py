@@ -236,6 +236,52 @@ def test_f1_monitor_alias_uses_measured_metric():
     assert metric_helpers.monitor_value(metrics(), 'val_f1@0.5') == .2
 
 
+def test_exp2a_transition_file_is_consumed_by_exp2b(tmp_path, monkeypatch):
+    """Run the transfer chain with real loops on a tiny network and synthetic data."""
+    import copy
+    data_config = make_data(tmp_path)
+    root = Path(__file__).resolve().parents[1]
+    warmup = yaml.safe_load((root / 'configs/exp2a_balanced_warmup.yaml').read_text())
+    transfer = yaml.safe_load((root / 'configs/exp2b_full_data_transfer.yaml').read_text())
+    expected_relative = Path(warmup['output_dir']) / 'checkpoints/selected_transition_checkpoint.pth'
+    assert Path(transfer['model']['init_checkpoint']) == expected_relative
+    expected_path = tmp_path / expected_relative
+    monkeypatch.setattr(runner, 'get_model', lambda **kwargs: TinyBackbone())
+
+    def prepare(config, filename):
+        subset = config['data'].get('small_subset')
+        config['data'] = copy.deepcopy(data_config['data'])
+        if subset:
+            config['data']['small_subset'] = copy.deepcopy(subset)
+            config['data']['small_subset']['split_path'] = str(tmp_path / 'subset.json')
+        config['training']['batch_size'] = 2
+        config['output_dir'] = str(tmp_path / config['output_dir'])
+        config['device'] = 'cpu'
+        config['model']['imagenet_weights'] = False
+        config['scheduler'] = {'type': 'none'}
+        for phase in config['phases']:
+            phase['epochs'] = 1
+            # Synthetic fixtures exercise file generation/loading, not research loss bounds.
+            phase['checkpoint_selection']['max_allowed_val_loss'] = 1000
+        path = tmp_path / filename
+        path.write_text(yaml.safe_dump(config))
+        return path
+
+    warmup_result = runner.run_experiment(prepare(warmup, 'warmup.yaml'))
+    selected = warmup_result['phase_summaries'][0]['selected_transition_checkpoint']
+    assert Path(selected['path']) == expected_path and expected_path.is_file()
+    assert expected_path.with_suffix('.pth.metrics.json').is_file()
+    selected_payload = torch.load(expected_path, weights_only=True)
+
+    transfer['model']['init_checkpoint'] = str(expected_path)
+    transfer_result = runner.run_experiment(prepare(transfer, 'transfer.yaml'))
+    loaded = transfer_result['loaded_checkpoint']
+    assert Path(loaded['path']) == expected_path
+    assert loaded['epoch'] == selected_payload['epoch']
+    assert loaded['metrics'] == selected_payload['metrics']
+    assert loaded['context'] == selected_payload['context']
+
+
 def test_stage_selection_inherits_guards_and_breaks_auc_ties_by_loss():
     selector = StageSelector.from_config({
         'default_selection': 'best_auc_with_loss_tolerance',
