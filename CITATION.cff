@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you reference this project, cite the research title and author below."
+title: "Balanced Warm-Up and Gradual Unfreezing for Mammography Classification"
+type: software
+authors:
+  - family-names: Li
+    given-names: Ruijing
+    affiliation: Sophia University
+version: 1.0.0
+date-released: 2026-10-11
+abstract: "Exploratory comparison of ResNet101 fine-tuning strategies for image-level mammography classification under severe class imbalance. Includes experiment metrics, training configurations and automated CPU tests."
+keywords:
+  - mammography
+  - transfer learning
+  - class imbalance
+  - gradual unfreezing
+  - PyTorch

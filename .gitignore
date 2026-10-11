@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+input/
+outputs/
+wandb/
+*.pth
+*.pt
+*.dcm
+*.log
+.DS_Store
+.pytest_cache/
+*.dicom

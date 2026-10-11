@@ -1,0 +1,4 @@
+partition,positive_images,negative_images,total_images,reported_positive_percent
+full_training,936,42792,43728,2.14
+validation,222,10756,10978,2.02
+warmup_subset_A,936,2767,3703,25.28

@@ -1,0 +1,5 @@
+experiment,strategy,result_type,epoch,epoch_scope,stage,roc_auc,pr_auc,val_loss
+Exp1,Direct full-data fine-tuning,best_auc,9,run,all_blocks,0.5780,0.0242,0.4115
+Exp2b,Subset warm-up then full-data transfer,best_auc,5,transfer_phase,all_blocks,0.6591,0.0426,0.4341
+Exp3,Gradual unfreezing,best_auc,21,global,layer2,0.6601,0.0486,0.4062
+Exp4,"Warm-up, recalibration and gradual unfreezing",best_auc,38,global,layer3,0.6711,0.0482,0.3980
